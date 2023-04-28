@@ -1,0 +1,180 @@
+# ---- Extracts Data Analysis libraries ---- #
+import pandas as pd
+import numpy as np
+
+
+# Extracts Graphing libraries
+from matplotlib import pyplot as plt
+
+
+# ---- Loads csv data file ---- #
+from google.colab import drive
+drive.mount("/content/drive") 
+data0 = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/6CS030 - Big Data/Assessment_vgsales.csv")
+
+
+# Original data
+data0
+
+
+# ---- Cloning data for preservance of original data ---- #
+data_L1 = data0
+data_L2 = data0
+data_L1 = data_L1.dropna()
+data_L2 = data_L2.dropna()
+
+
+# ---- Data Clone1 ---- # 
+data_L1 = data_L2.loc[:,["Platform", "Year", "Genre", "Global_Sales"]]
+data_L1
+
+
+# ---- List of all platforms ---- #
+list_Platforms = data_L1["Platform"].unique()
+print(list_Platforms)
+
+
+# ---- Scatter plot of data for PC platform to select the best platform ---- #
+df_PC = data_L1[data_L1['Platform'] == "PC"]
+df_PC = df_PC.sort_values(by='Year')
+
+plt.xlabel("Year")
+plt.ylabel("Gloabl Sales in 10M")
+plt.title("Sales of PC games")
+plt.scatter(df_PC["Year"], df_PC["Global_Sales"], c='b', marker='o')
+
+
+# ---- Scatter plot for data in PS4 platform to select the best platform ---- #
+df_PS4 = data_L1[data_L1['Platform'] == "PS4"]
+df_PS4 = df_PS4.sort_values(by='Year')
+df_PS4
+
+min1 = int(min(df_PS4['Year']))
+max1 = int(max(df_PS4['Year']))
+
+plt.title('Sales of PS4 games')
+plt.xlabel("Years")
+plt.ylabel("Global_Sales in 10M")
+plt.scatter(df_PS4['Year'], df_PS4['Global_Sales'])
+plt.xticks(range(min1, max1+1, 1))                          # Fixes the increments in the x-axis
+plt.show()
+
+
+# ---- Data Clone 2 ---- #
+data_L2 = data0.loc[:,["Platform", "Genre", "Global_Sales", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales"]]
+df2_PS4 = data_L2[data_L2['Platform'].isin(["PS4"])]
+
+NA_Total = sum(df2_PS4["NA_Sales"])
+EU_Total = sum(df2_PS4["EU_Sales"])
+JP_Total = sum(df2_PS4["JP_Sales"])
+Other_Total = sum(df2_PS4["Other_Sales"])
+Global_Total = NA_Total + EU_Total + JP_Total + Other_Total
+
+df2_PS4
+
+
+# ---- Data of Piechart in percentage ---- # 
+Eng_1 = ((NA_Total + EU_Total)/(Global_Total))*100
+print(Eng_1)
+
+
+# ----  Pie chart for language selection decision ---- #
+df2 = pd.DataFrame({'Sales_Region': [NA_Total, EU_Total, JP_Total, Other_Total],},
+                  index=['North America', 'Europe', 'Japan', 'Others'])
+plot = df2.plot.pie(y='Sales_Region', figsize=(5, 5))
+
+
+# ---- Data Clone 3 ---- #
+df3_PS4 = df2_PS4.loc[:, ["Genre", "Global_Sales"]]
+df3_PS4 = df3_PS4.sort_values(by='Genre')
+rows = df3_PS4.shape[0]
+df3_PS4
+
+
+# ---- List of all genres ---- #
+list_Genre = df3_PS4["Genre"].unique()
+list_Genre
+
+
+# ---- A function to find the list of total sales by genre ---- #
+def find_Total_Sales(list1, list2):
+  list_Total = {}
+  for i in list1:
+    df4_PS4 = list2[list2['Genre'].isin([i])]
+    list_Total[i] = sum(df4_PS4["Global_Sales"])
+  return list_Total
+  
+  
+# ---- A function to find top 5 genres ---- #
+def find_Top5_Genres(list1):
+  dict_Total = {}
+  dict_Total_5max = {}
+  list_Total_5max = []
+
+  list_Total1 = list(list1.values())
+  list_Total1.sort()
+
+  # Finds the list of 5max genres
+  for i in range(1,6):
+    list_Total_5max.append(list_Total1[-i])
+
+  # Finds the dictionary of 5max genres
+  for key, value in list1.items():
+    for i in list_Total_5max:
+      if value == i:
+        dict_Total_5max[key] = value
+
+  ltf = list(dict_Total_5max.values())
+
+  # Rounds off the list of 5max genres
+  for i in range(len(ltf)):
+    ltf[i] = round(ltf[i])
+
+  return ltf, dict_Total_5max
+  
+list_Total = find_Total_Sales(list_Genre, df3_PS4)
+ltf, dict_Total_5max = find_Top5_Genres(list_Total)
+print(dict_Total_5max)
+print(ltf)
+
+
+# ---- Bar graph for game sales by genres ---- #
+x = ["Action", "Racing", "Role-Playing", "Shooter", "Sports"]
+y = ltf
+
+fig = plt.subplots(figsize =(10, 5))
+plt.bar(x,y)
+plt.xlabel("Genre")
+plt.ylabel("Gloabl_Sales")
+plt.title("Game Data by Genre & Sales")
+
+bars = plt.bar(x, height=y)
+
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width() / 2, yval + 0.01, yval)
+
+plt.show()
+
+
+# ---- Data for boxplot ---- #
+
+PS4_Action = df3_PS4[df3_PS4['Genre'] == 'Action']['Global_Sales']
+PS4_Action
+
+PS4_Shooter = df3_PS4[df3_PS4['Genre'] == 'Shooter']['Global_Sales']
+PS4_Shooter
+
+data = [PS4_Action, PS4_Shooter]
+
+
+# --- Boxplot for Action & Shooter game genre global sales --- #
+
+fig = plt.figure(figsize =(10, 7))
+ax = fig.add_axes([0, 0, 1, 1])
+ax.set_xticklabels(['Action', 'Shooter'])
+ax.set_xlabel('GAME GENRE')
+ax.set_ylabel('Sales in 10M')
+bp = ax.boxplot(data)
+ax.grid(True)
+plt.show()
