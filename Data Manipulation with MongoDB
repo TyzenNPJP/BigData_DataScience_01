@@ -1,0 +1,52 @@
+/* -------------------------------
+Data is taken from Kaggle.
+It is about video game sales
+
+Link to Dataset
+https://www.kaggle.com/datasets/gregorut/videogamesales
+------------------------------- */
+
+// Select a database
+use BigData
+
+// Create a collection
+db.createCollection('CourseworkDB')
+
+// Confirm selection of collection
+// Count the number of documents
+db.CourseworkDB.countDocuments()
+
+/*
+The initial data had 16598 rows
+When uploading data into mongoDB, rows containing empty fields were deleted
+Automatic data cleaning
+The final data now has 16327 rows
+*/
+
+// View the data
+db.CourseworkDB.find()
+
+// View all genres of game
+db.CourseworkDB.distinct('Genre')
+
+// Select all data whose genre is 'Action'
+db.Coursework.find({genre: 'Action'})
+
+// Select all data whose genre is 'Shooter'
+db.Coursework.find({genre: 'Shooter'})
+
+// Select all data which are of date later than 2013
+db.Coursework.find({Year: {$gt: 2013}})
+
+// Sum all the document's global_sales column whose genre is PS4 
+db.CourseworkDB.aggregate([
+    { $match: { Genre: "PS4" } },
+    { $group: { _id: null, total: { $sum: "$Global_Sales" } } }
+])
+
+// Find the max global_sales whose genre is PS4
+db.CourseworkDB.aggregate([
+    { $match: { Genre: "PS4" } },
+    { $group: { _id: null, max: { $max: "$Global_Sales" } } }
+])
+
