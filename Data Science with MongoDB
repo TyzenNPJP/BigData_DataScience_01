@@ -40,13 +40,11 @@ db.CourseworkDB.find({Year: {$gt: 2013}})
 
 // Sum all the document's global_sales column whose genre is PS4 
 db.CourseworkDB.aggregate([
-    { $match: { Genre: "PS4" } },
     { $group: { _id: "$Platform", total: { $sum: "$Global_Sales" } } }
 ])
 
 // Find the max global_sales whose genre is PS4
 db.CourseworkDB.aggregate([
-    { $match: { Genre: "PS4" } },
     { $group: { _id: "$Platform", max: { $max: "$Global_Sales" } } }
 ])
 
