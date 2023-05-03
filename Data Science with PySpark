@@ -1,0 +1,117 @@
+# ------------------------------------------------------------------------------------- #
+#    NOTE: Visualization part is done in python in google colab repository in github    #
+# ------------------------------------------------------------------------------------- #
+
+# Installation
+# PySpark
+!pip install pyspark py4j
+
+# Java
+!apt-get update
+!apt-get install openjdk-8-jdk-headless -qq >/dev/null
+
+!pip install -q findspark
+
+# Validating jvm
+!ls /usr/lib/jvm/
+
+# Import libraries
+import pyspark
+from pyspark.sql import SparkSession
+import findspark
+findspark.init()
+
+# Extracts Graphing libraries
+from matplotlib import pyplot as plt
+
+# Instantiate a session
+spark = SparkSession.builder.appName("BigData_Coursework_2060340").getOrCreate()
+
+# Upload file
+from google.colab import files
+files.upload()
+
+# Setup the dataset
+df = spark.read.format("csv").option("header", "true").option("mode", "failfast").load("Assessment_vgsales.csv")
+df.createOrReplaceTempView("vg")
+
+# Show the dataset
+spark.sql("select * from vg").show(10)
+
+# Count the number of records
+spark.sql("select count(*) from vg").show()
+
+### Data cleaning ###
+# Feature selection
+data_L1 = spark.sql("select Platform,Year,Genre,NA_Sales,EU_Sales,JP_Sales,Other_Sales,Global_Sales from vg")
+#data_L1.show()
+
+# Drop null
+data_L1 = data_L1.na.drop()
+
+# Data cloning
+data_L2 = data_L1
+
+# Showcase all the platforms
+spark.sql("select DISTINCT Platform from vg").show()
+
+# Select data of PC platform
+df_PC = spark.sql("select * from vg where Platform='PC' order by Year")
+
+# Select data of PS4 platform
+df_PS4 = spark.sql("select * from vg where Platform='PS4' order by Year")
+
+# Showcase all genres of game
+df_Genre = spark.sql("select DISTINCT Genre from vg")
+df_Genre.show()
+
+### ------------------------------------------------- ###
+# Select data of only Action genre & Global_sales
+df_Action = spark.sql("select Genre,Global_Sales from vg where Genre='Action'")
+
+#Find total sales in Action genre
+df_Action = df_Action.toPandas()
+sum_Action = 0
+for i in df_Action["Global_Sales"]:
+  sum_Action += float(i)
+
+print("Total sales in Action Genre: ", sum_Action)
+
+### ------------------------------------------------- ###
+# Select data of only Shooter genre & Global_Sales
+df_Shooter = spark.sql("select Genre,Global_Sales from vg where Genre='Shooter'")
+
+# Find total sales in Action genre
+df_Shooter = df_Shooter.toPandas()
+sum_Shooter = 0
+for i in df_Shooter["Global_Sales"]:
+  sum_Shooter += float(i)
+
+print("Total sales in Action Genre: ", sum_Shooter)
+
+### ------------------------------------------------- ###
+
+# Select data of only Shooter genre & Global_Sales
+df_RolePlaying = spark.sql("select Genre,Global_Sales from vg where Genre='Role-Playing'")
+
+# Find total sales in Action genre
+df_RolePlaying = df_RolePlaying.toPandas()
+sum_RolePlaying = 0
+for i in df_RolePlaying["Global_Sales"]:
+  sum_RolePlaying += float(i)
+
+print("Total sales in Action Genre: ", sum_RolePlaying)
+
+### ------------------------------------------------- ###
+
+# Select data of only Shooter genre & Global_Sales
+df_Strategy = spark.sql("select Genre,Global_Sales from vg where Genre='Strategy'")
+
+# Find total sales in Action genre
+df_Strategy = df_Strategy.toPandas()
+sum_Strategy = 0
+for i in df_Strategy["Global_Sales"]:
+  sum_Strategy += float(i)
+
+print("Total sales in Action Genre: ", sum_Strategy)
+
